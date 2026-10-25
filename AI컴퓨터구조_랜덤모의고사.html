@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI컴퓨터구조 랜덤 모의고사</title>
+<style>
+:root{
+  --bg:#f6f7f9; --card:#ffffff; --text:#1b1f24; --muted:#6a737d; --line:#e3e6ea;
+  --accent:#3b5bdb; --accent-soft:#e8edff;
+  --ok:#2b8a3e; --ok-soft:#e6f4ea; --bad:#c92a2a; --bad-soft:#fdecec; --warn:#b26a00; --warn-soft:#fff4e0;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#121417; --card:#1b1e23; --text:#e6e8eb; --muted:#9aa3ad; --line:#2c3138;
+    --accent:#7b93ff; --accent-soft:#232a45;
+    --ok:#5cc177; --ok-soft:#1a2e20; --bad:#ff7070; --bad-soft:#3a1d1d; --warn:#f0b04a; --warn-soft:#3a2c14;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121417; --card:#1b1e23; --text:#e6e8eb; --muted:#9aa3ad; --line:#2c3138;
+  --accent:#7b93ff; --accent-soft:#232a45;
+  --ok:#5cc177; --ok-soft:#1a2e20; --bad:#ff7070; --bad-soft:#3a1d1d; --warn:#f0b04a; --warn-soft:#3a2c14;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Malgun Gothic","Noto Sans KR",sans-serif;
+  line-height:1.6;font-size:16px}
+header{position:sticky;top:0;z-index:10;background:var(--card);border-bottom:1px solid var(--line)}
+.bar{max-width:820px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.bar h1{font-size:17px;margin:0;flex:1;min-width:160px}
+.stat{font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums}
+button{font:inherit;font-size:14px;border:1px solid var(--line);background:var(--card);color:var(--text);
+  padding:7px 12px;border-radius:8px;cursor:pointer}
+button:hover{border-color:var(--accent)}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+main{max-width:820px;margin:0 auto;padding:16px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:14px}
+.opts{display:flex;gap:18px;flex-wrap:wrap;font-size:14px;color:var(--muted)}
+.opts label{display:flex;gap:6px;align-items:center;cursor:pointer}
+.nav{display:grid;grid-template-columns:repeat(auto-fill,minmax(38px,1fr));gap:6px;margin-top:10px}
+.nav a{display:block;text-align:center;padding:6px 0;border-radius:6px;border:1px solid var(--line);
+  color:var(--text);text-decoration:none;font-size:13px;font-variant-numeric:tabular-nums}
+.nav a.done{background:var(--accent-soft);border-color:var(--accent)}
+.nav a.ok{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}
+.nav a.bad{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+.nav a.part{background:var(--warn-soft);border-color:var(--warn);color:var(--warn)}
+.q{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px;scroll-margin-top:80px}
+.q.ok{border-color:var(--ok)} .q.bad{border-color:var(--bad)} .q.part{border-color:var(--warn)}
+.qhead{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:13px;color:var(--muted)}
+.num{font-weight:700;font-size:16px;color:var(--text)}
+.tag{padding:1px 8px;border-radius:99px;background:var(--accent-soft);color:var(--accent);font-size:12px}
+.tag.var{background:var(--warn-soft);color:var(--warn)}
+.stem{margin:0 0 12px;white-space:pre-line}
+.stem ul{margin:6px 0 0;padding-left:20px;white-space:normal}
+.choice{display:flex;gap:10px;align-items:flex-start;padding:9px 12px;border:1px solid var(--line);border-radius:8px;
+  margin-bottom:6px;cursor:pointer}
+.choice:hover{border-color:var(--accent)}
+.choice input{display:none}
+.choice .mk{flex:none;width:1.4em;font-weight:600}
+.choice.sel{border-color:var(--accent);background:var(--accent-soft)}
+.choice.right{border-color:var(--ok);background:var(--ok-soft)}
+.choice.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.graded .choice{cursor:default}
+.field{display:flex;align-items:center;gap:8px;margin:6px 0;flex-wrap:wrap}
+.field span{font-size:14px;color:var(--muted)}
+.field input{font:inherit;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--text);
+  min-width:0;width:220px;max-width:100%}
+.field input.right{border-color:var(--ok)} .field input.wrong{border-color:var(--bad)}
+.exp{margin-top:12px;padding:10px 12px;border-radius:8px;background:var(--bg);font-size:14px}
+.exp b{color:var(--text)}
+.exp .src{color:var(--muted);font-size:12px;margin-top:4px}
+.result{font-size:15px}
+.result .big{font-size:26px;font-weight:700;font-variant-numeric:tabular-nums}
+.result .row{display:flex;gap:24px;flex-wrap:wrap;margin-top:6px}
+.result a{color:var(--accent)}
+.field button.check{margin-top:4px}
+.hidden{display:none}
+.footer{display:flex;gap:10px;justify-content:center;margin:20px 0 40px}
+@media (max-width:520px){ .bar h1{font-size:15px} .field input{width:100%} }
+</style>
+</head>
+<body>
+<header>
+  <div class="bar">
+    <h1>AI컴퓨터구조 랜덤 모의고사</h1>
+    <span class="stat" id="progress">0 / 30</span>
+    <span class="stat" id="timer">00:00</span>
+    <button id="btnNew">새로 섞기</button>
+    <button id="btnSubmit" class="primary">제출·통계</button>
+  </div>
+</header>
+<main>
+  <div class="panel">
+    <div class="opts">
+      <label><input type="checkbox" id="optMix" checked> 객관식·단답형 섞어서 출제</label>
+      <label><input type="checkbox" id="optVar" checked> 단답형 계산문제 숫자 바꾸기</label>
+      <label class="hidden" id="wrongOnlyWrap"><input type="checkbox" id="optWrongOnly"> 틀린 문제만 보기</label>
+    </div>
+    <div class="nav" id="nav"></div>
+  </div>
+  <div class="panel result hidden" id="result"></div>
+  <div id="quiz"></div>
+  <div class="footer">
+    <button id="btnNew2">새로 섞기</button>
+    <button id="btnSubmit2" class="primary">제출·통계</button>
+  </div>
+</main>
+
+<script>
+/* ---------------- 문제 데이터 (원본 PDF 그대로) ---------------- */
+const MCQ = [
+ {id:1, stem:"FLOPS에 대한 설명으로 가장 적절한 것은?",
+  opts:["메모리에 저장할 수 있는 데이터의 총량이다.","CPU 내부에 포함된 코어의 개수이다.","1초 동안 수행할 수 있는 부동소수점 연산의 횟수이다.","하나의 명령어를 수행하는 데 필요한 평균 클록 사이클 수이다."],
+  ans:2, exp:"FLOPS는 초당 부동소수점 연산 횟수를 나타낸다.", src:"1주차 28쪽"},
+ {id:2, stem:"다음 중 GPU의 병렬 처리 특성을 활용하기에 가장 적합한 작업은?",
+  opts:["많은 데이터에 대해 유사한 곱셈과 덧셈을 동시에 수행하는 행렬 연산","앞선 작업의 결과에 따라 다음 작업이 계속 달라지는 순차적 의사결정","서로 의존하는 소수의 명령어를 정해진 순서대로 실행하는 작업","복잡한 조건 분기가 연속적으로 발생하는 제어 작업"],
+  ans:0, exp:"GPU는 많은 데이터에 유사한 연산을 병렬로 적용하는 작업에 적합하다.", src:"1주차 13·18쪽"},
+ {id:3, stem:"MAC 연산이 acc ← acc + (a × b)로 정의된다. 초기값이 acc = 2, a = 3, b = 4일 때 MAC 연산을 한 번 수행한 후 acc의 값은?",
+  opts:["5","12","24","14"], ans:3, exp:"2 + (3 × 4) = 14이다.", src:"1주차 24쪽"},
+ {id:4, stem:"부호 없는 6비트 이진수로 표현할 수 있는 가장 큰 십진수는?",
+  opts:["32","63","64","127"], ans:1, exp:"부호 없는 n비트 정수의 최댓값은 2ⁿ − 1이므로 63이다.", src:"1주차 37쪽"},
+ {id:5, stem:"전통적 프로그래밍과 지도학습의 차이에 대한 설명으로 가장 적절한 것은?",
+  opts:["전통적 프로그래밍은 데이터와 정답으로부터 규칙을 학습한다.","지도학습에서는 사람이 모든 판단 규칙을 코드로 직접 작성해야 한다.","전통적 프로그래밍은 규칙과 데이터로 답을 구하고, 지도학습은 데이터와 정답으로 규칙을 학습한다.","지도학습은 학습 과정 없이 입력 데이터만으로 규칙을 완성한다."],
+  ans:2, exp:"지도학습은 데이터와 정답의 관계를 학습해 규칙이나 모델을 얻는다.", src:"1주차 22쪽"},
+ {id:6, stem:"코어 수를 4개에서 8개로 늘려도 프로그램 실행 속도가 정확히 2배가 되지 않을 수 있다. 그 이유로 가장 적절한 것은?",
+  opts:["코어 수를 늘리면 클록 주파수가 반드시 절반으로 감소하기 때문이다.","병렬화할 수 없는 부분과 작업 분할·통신·결과 합산 비용이 존재하기 때문이다.","여러 코어는 서로 다른 데이터를 동시에 처리할 수 없기 때문이다.","병렬 처리에서는 최종 결과를 합산할 수 없기 때문이다."],
+  ans:1, exp:"순차 실행 부분과 분할·통신·합산 비용이 병렬 처리의 성능 향상을 제한한다.", src:"1주차 12·43쪽"},
+ {id:7, stem:"게이트 지연의 근사식이 t ≈ C × ΔV / I일 때, ΔV와 I가 일정한 상태에서 부하 커패시턴스 C가 2배가 되면 지연 시간은 어떻게 변하는가?",
+  opts:["기존의 1/4이 된다.","기존의 1/2이 된다.","변하지 않는다.","기존의 2배가 된다."],
+  ans:3, exp:"다른 조건이 같으면 지연은 C에 비례하므로 2배가 된다.", src:"ch2 12쪽"},
+ {id:8, stem:"반가산기에서 입력 A와 B가 모두 1일 때, 합 S와 자리올림 C의 값은?",
+  opts:["S = 0, C = 1","S = 1, C = 0","S = 1, C = 1","S = 0, C = 0"],
+  ans:0, exp:"반가산기에서 S = A XOR B, C = A AND B이다.", src:"ch2 19쪽"},
+ {id:9, stem:"반가산기와 비교했을 때 전가산기가 추가로 입력받는 것은?",
+  opts:["클록 주파수","메모리 주소","아래 자리에서 전달된 자리올림 입력 Cin","명령어의 종류"],
+  ans:2, exp:"전가산기는 A, B와 함께 아래 자리의 자리올림 Cin을 입력받는다.", src:"ch2 19쪽"},
+ {id:10, stem:"8비트 Ripple Carry Adder의 최악 지연을 계산하려고 한다. 자리올림이 전가산기 한 단을 통과하는 데 2ns가 걸리고, 8단을 순차적으로 통과한다고 가정하면 총 지연은?",
+  opts:["8ns","16ns","4ns","32ns"], ans:1, exp:"주어진 순차 전달 모델에서 8 × 2ns = 16ns이다.", src:"ch2 22쪽"},
+ {id:11, stem:"Carry Select Adder가 Ripple Carry Adder보다 자리올림 대기 시간을 줄이는 방법은?",
+  opts:["상위 비트의 계산을 생략한다.","모든 자리올림을 항상 0으로 처리한다.","하위 비트의 계산이 끝난 뒤 상위 비트 계산을 시작한다.","상위 부분을 Cin = 0과 Cin = 1인 경우로 미리 계산한 뒤 실제 자리올림에 따라 선택한다."],
+  ans:3, exp:"두 가지 자리올림 입력을 가정해 미리 계산하고, 실제 입력에 따라 결과를 선택한다.", src:"ch2 25쪽"},
+ {id:12, stem:"동적 전력이 P<sub>dynamic</sub> ≈ αCV²f에 비례한다. 다른 조건을 일정하게 유지하고 공급 전압만 기존의 80%로 낮추면, 동적 전력은 기존의 몇 %가 되는가?",
+  opts:["64%","80%","40%","96%"], ans:0, exp:"동적 전력 비율은 0.8² = 0.64, 즉 64%이다.", src:"ch2 37~38쪽"},
+ {id:13, stem:"현대 반도체 공정에서 ‘2nm 공정’이라는 명칭에 대한 설명으로 가장 적절한 것은?",
+  opts:["칩 내부 모든 배선의 폭이 정확히 2nm라는 뜻이다.","모든 트랜지스터의 게이트 길이가 정확히 2nm라는 뜻이다.","공정 기술의 세대를 나타내며, 특정 실제 치수를 그대로 의미하지는 않는다.","제조사가 달라도 같은 이름이면 밀도와 성능이 반드시 동일하다."],
+  ans:2, exp:"현대 공정 노드 이름은 기술 세대를 나타내며 특정 실제 치수와 일치하지 않는다.", src:"ch2 33쪽"},
+ {id:14, stem:"폰 노이만의 저장 프로그램 구조에 대한 설명으로 옳은 것은?",
+  opts:["프로그램은 CPU에만 저장하고 데이터는 메모리에만 저장한다.","명령어는 저장하지 않고 실행할 때마다 새로 만든다.","프로그램과 데이터는 반드시 서로 다른 종류의 저장 장치에 저장한다.","프로그램의 명령어와 데이터를 모두 메모리에 저장한다."],
+  ans:3, exp:"저장 프로그램 구조는 명령어와 데이터를 모두 메모리에 저장한다.", src:"3주차 10·21쪽"},
+ {id:15, stem:"강의자료의 ARM 명령어 예시에서 LDR, ADD, STR의 기능을 올바르게 연결한 것은?",
+  opts:["LDR: 덧셈 / ADD: 메모리 읽기 / STR: 메모리 쓰기","LDR: 메모리에서 레지스터로 읽기 / ADD: 덧셈 / STR: 레지스터 값을 메모리에 쓰기","LDR: 메모리에 쓰기 / ADD: 덧셈 / STR: 메모리에서 읽기","LDR: 명령어 해석 / ADD: 결과 저장 / STR: 클록 생성"],
+  ans:1, exp:"LDR은 읽기, ADD는 덧셈, STR은 쓰기를 수행한다.", src:"3주차 11쪽"},
+ {id:16, stem:"프로그램의 실행 명령어 수가 1,000,000개이고 평균 CPI가 1.5이다. 클록 주파수가 2GHz일 때 CPU 실행 시간은?",
+  opts:["0.75ms","1.5ms","3ms","0.5ms"], ans:0, exp:"실행 시간 = IC × CPI ÷ 주파수 = 10⁶ × 1.5 ÷ (2 × 10⁹) = 0.75ms이다.", src:"3주차 17쪽"},
+ {id:17, stem:"동일한 프로그램을 실행하며, 실행 명령어 수는 두 컴퓨터에서 같다고 가정한다. 컴퓨터 A는 클록 주기 10ns, 평균 CPI 2.0이고, 컴퓨터 B는 클록 주기 20ns, 평균 CPI 1.2이다. 성능 비교로 옳은 것은?",
+  opts:["B가 A보다 2배 빠르다.","A가 B보다 2배 빠르다.","두 컴퓨터의 실행 시간은 같다.","A의 성능이 B의 1.2배이다."],
+  ans:3, exp:"명령어당 평균 시간은 A가 20ns, B가 24ns이다. 성능비는 24 ÷ 20 = 1.2이다.", src:"3주차 17쪽"},
+ {id:18, stem:"4단계 파이프라인의 각 단계 지연이 인출 2ns, 해석 4ns, 실행 3ns, 저장 2ns이다. 파이프라인 레지스터 등의 추가 지연을 무시할 때 가능한 최소 클록 주기는?",
+  opts:["2ns","3ns","4ns","11ns"], ans:2, exp:"가장 느린 단계인 해석 단계의 4ns에 맞춰야 한다.", src:"3주차 24~25쪽"},
+ {id:19, stem:"파이프라인에 대한 설명으로 가장 적절한 것은?",
+  opts:["여러 명령어의 서로 다른 처리 단계를 겹쳐 실행해 전체 처리량을 높인다.","파이프라인 단계가 4개이면 단일 명령어의 지연이 반드시 1/4로 줄어든다.","명령어 사이에 데이터 의존성이 있어도 항상 대기 없이 실행할 수 있다.","분기 명령어가 있어도 처리 성능에는 영향을 주지 않는다."],
+  ans:0, exp:"파이프라인은 명령어 처리를 겹쳐 처리량을 높이며, 의존성과 분기로 손실이 발생할 수 있다.", src:"3주차 25쪽"},
+ {id:20, stem:"강의자료에서 설명한 일반적인 메모리 계층을 접근 속도가 빠른 쪽부터 나열한 것은?",
+  opts:["DRAM → L3 캐시 → L2 캐시 → L1 캐시 → 레지스터 → SSD","레지스터 → L1 캐시 → L2 캐시 → L3 캐시 → DRAM → SSD","L1 캐시 → 레지스터 → DRAM → L2 캐시 → L3 캐시 → SSD","SSD → DRAM → L3 캐시 → L2 캐시 → L1 캐시 → 레지스터"],
+  ans:1, exp:"일반적으로 레지스터, 캐시, DRAM, 보조기억장치 순으로 접근 지연이 커진다.", src:"ch4 24~25쪽"},
+ {id:21, stem:"DRAM과 SRAM에 대한 설명으로 옳은 것은?",
+  opts:["DRAM과 SRAM은 모두 비휘발성 메모리이다.","SRAM은 주기적인 Refresh가 반드시 필요하다.","DRAM은 일반적으로 CPU 캐시에, SRAM은 대용량 주기억장치에 사용한다.","DRAM은 Refresh가 필요하며, SRAM은 전원이 공급되는 동안 Refresh 없이 값을 유지한다."],
+  ans:3, exp:"DRAM은 Refresh가 필요하다. SRAM은 전원 공급 중 Refresh가 필요 없으며, 둘 다 휘발성이다.", src:"ch4 15~16쪽"},
+ {id:22, stem:"메모리의 용량·지연시간·대역폭에 대한 설명으로 옳은 것은?",
+  opts:["용량은 저장 가능한 데이터의 양, 지연시간은 요청 후 데이터를 받기까지의 대기 시간, 대역폭은 단위 시간당 전달 가능한 데이터의 양이다.","용량이 2배가 되면 지연시간은 반드시 절반이 된다.","대역폭이 증가하면 저장 가능한 데이터의 총량도 반드시 증가한다.","용량·지연시간·대역폭은 모두 GB 단위로 나타낸다."],
+  ans:0, exp:"용량·지연시간·대역폭은 각각 저장량·대기 시간·전달률을 뜻한다.", src:"ch4 19쪽"},
+ {id:23, stem:"다음 조건의 단순 캐시 모델에서 캐시 적중 횟수는?<ul><li>처음에는 캐시가 비어 있다.</li><li>캐시에는 데이터 항목을 최대 3개 저장한다.</li><li>항목은 서로 독립적이며, 미스가 발생하면 요청한 항목만 가져온다.</li><li>공간이 부족하면 먼저 들어온 항목을 먼저 내보낸다(FIFO).</li><li>적중이 발생해도 교체 순서는 바뀌지 않는다.</li><li>접근 순서: A → B → A → C → B → A → D</li></ul>",
+  opts:["1회","2회","3회","4회"], ans:2, exp:"접근 결과는 미스 → 미스 → 적중 → 미스 → 적중 → 적중 → 미스로, 적중은 3회이다.", src:"ch4 28~30쪽의 캐시 모형 응용"},
+ {id:24, stem:"캐시 라인의 크기는 64바이트이고 int의 크기는 4바이트이다. arr[0]은 캐시 라인의 시작 주소에 정렬되어 있고, 캐시는 처음에 비어 있다. arr[0]부터 arr[15]까지 순서대로 한 번씩 읽을 때 캐시 적중 횟수는? 단, 미리 가져오기와 캐시 라인 교체는 발생하지 않는다.",
+  opts:["16회","15회","8회","0회"], ans:1, exp:"한 라인에 정수 16개가 들어간다. 첫 접근은 미스이고 나머지 15번은 적중이다.", src:"ch4 33쪽"},
+ {id:25, stem:"AI 가속기에서 HBM을 사용하는 주요 이유로 가장 적절한 것은?",
+  opts:["많은 연산기에 데이터를 공급할 수 있도록 높은 메모리 대역폭을 확보하기 위해","전원이 꺼져도 학습 데이터를 영구 보존하기 위해","모든 프로그램의 명령어 수를 줄이기 위해","메모리 접근을 완전히 없애기 위해"],
+  ans:0, exp:"높은 메모리 대역폭으로 많은 연산기에 데이터를 공급해 대기 시간을 줄이는 데 목적이 있다.", src:"ch4 41~42쪽"},
+];
+
+/* ---------------- 단답형: 계산문제는 [0]이 원본 기본값 ---------------- */
+const V26 = ["101101","110110","100111","111001","101011","1011101","1110010","110001"];
+// [ALU 개수, 메모리 명령 개수, ALU 사이클, 메모리 사이클, 주파수(MHz)]
+const V28 = [[6,4,1,2,100],[5,5,1,2,200],[7,3,1,3,100],[8,2,1,2,250],[4,6,1,2,50],[6,4,2,3,100],[3,2,1,4,500],[9,6,1,2,200]];
+// [단계 시간(ns), 단계 수, 명령어 수]
+const V29 = [[3,4,6],[2,5,10],[4,4,8],[5,3,7],[2,6,5],[3,5,12],[4,5,9],[2,4,20]];
+
+const fmt = x => String(Math.round(x*1e6)/1e6);
+const pick = (arr, vary) => vary ? arr[Math.floor(Math.random()*arr.length)] : arr[0];
+const has = (s, words) => words.some(w => s.includes(w));
+const norm = s => s.toLowerCase().replace(/\s+/g,"");
+const numOf = s => { const m = String(s).replace(/,/g,"").match(/-?\d+(\.\d+)?/); return m ? parseFloat(m[0]) : NaN; };
+const eq = (a,b) => Math.abs(a-b) < 1e-6;
+
+function makeShort(vary){
+  const list = [];
+  // 26
+  { const b = pick(V26, vary), n = b.length;
+    const terms = [...b].map((c,i)=>c==="1"?2**(n-1-i):0).filter(Boolean);
+    const val = parseInt(b,2);
+    list.push({id:26, varied: b!==V26[0], stem:`부호 없는 이진수 ${b}₂를 십진수로 나타내시오.`,
+      fields:[{label:"답", unit:""}],
+      grade: a => eq(numOf(a[0]),val) ? [5] : [0], max:5,
+      answer:`${val}`, exp:`${terms.join(" + ")} = ${val}이다. 정답 5점.`, src:"1주차 37쪽"});
+  }
+  // 27
+  list.push({id:27, varied:false, stem:"반도체 설계에서 사용하는 PPA의 세 요소를 한글 또는 영어로 쓰시오.",
+    fields:[{label:"①",unit:""},{label:"②",unit:""},{label:"③",unit:""}],
+    grade: a => { const s = norm(a.join(" "));
+      return [has(s,["성능","performance"])?2:0, has(s,["전력","power"])?2:0, has(s,["면적","area"])?1:0]; },
+    max:5, answer:"성능 Performance, 전력 Power, 면적 Area",
+    exp:"순서는 무관하며 한글·영어 모두 인정한다. 성능 2점, 전력 2점, 면적 1점.", src:"ch2 36쪽"});
+  // 28
+  { const [a,m,ca,cm,f] = pick(V28, vary);
+    const cyc = a*ca + m*cm, cpi = cyc/(a+m), per = 1000/f, t = cyc*per;
+    list.push({id:28, varied: [a,m,ca,cm,f].join()!==V28[0].join(),
+      stem:`어떤 프로그램은 ALU 명령어 ${a}개와 메모리 접근 명령어 ${m}개를 실행한다. ALU 명령어는 각각 ${ca}사이클, 메모리 접근 명령어는 각각 ${cm}사이클이 필요하며, 클록 주파수는 ${f}MHz이다. 명령어 실행은 겹치지 않으며 추가 대기는 없다. 다음 값을 쓰시오.`,
+      fields:[{label:"총 클록 사이클 수",unit:"사이클"},{label:"평균 CPI",unit:""},{label:"실행 시간",unit:"ns"}],
+      grade: x => [eq(numOf(x[0]),cyc)?2:0, eq(numOf(x[1]),cpi)?1:0, eq(numOf(x[2]),t)?2:0], max:5,
+      answer:`${cyc}사이클, 평균 CPI ${fmt(cpi)}, 실행 시간 ${fmt(t)}ns`,
+      exp:`총 사이클 = ${a} × ${ca} + ${m} × ${cm} = ${cyc}. 평균 CPI = ${cyc} ÷ ${a+m} = ${fmt(cpi)}. 클록 주기 = 1 ÷ ${f}MHz = ${fmt(per)}ns이므로 실행 시간은 ${cyc} × ${fmt(per)}ns = ${fmt(t)}ns이다. 각각 2점·1점·2점.`,
+      src:"3주차 16~19쪽의 계산 방식 응용"});
+  }
+  // 29
+  { const [st,k,n] = pick(V29, vary); const cycles = k+n-1, t = cycles*st;
+    list.push({id:29, varied: [st,k,n].join()!==V29[0].join(),
+      stem:`각 단계가 정확히 ${st}ns인 ${k}단계 파이프라인이 있다. 처음에는 파이프라인이 비어 있고, 매 사이클 새 명령어를 하나씩 투입한다. 스톨·분기·추가 지연 없이 명령어 ${n}개를 모두 완료하는 데 걸리는 시간은 몇 ns인가?`,
+      fields:[{label:"답",unit:"ns"}],
+      grade: x => eq(numOf(x[0]),t) ? [5] : [0], max:5, answer:`${t}ns`,
+      exp:`첫 명령어 완료에 ${k}사이클, 나머지 ${n-1}개 완료에 ${n-1}사이클이 추가된다. 총 ${cycles} × ${st}ns = ${t}ns이다. 정답 5점.`,
+      src:"3주차 22~25쪽의 파이프라인 원리 응용"});
+  }
+  // 30
+  list.push({id:30, varied:false, stem:"C 언어의 큰 2차원 배열을 순회할 때, 한 행의 원소를 연속해서 읽으면 같은 캐시 라인에 포함된 인접 원소를 활용하기 쉽다. 이와 관련된 지역성의 명칭을 쓰시오.",
+    fields:[{label:"답",unit:""}],
+    grade: a => has(norm(a[0]),["공간","spatial"]) ? [5] : [0], max:5,
+    answer:"공간 지역성 (Spatial Locality)",
+    exp:"접근한 주소 주변의 데이터도 곧 사용할 가능성이 높은 성질이다. 한글·영어 모두 인정하며 정답 5점.", src:"ch4 32~38쪽"});
+  return list;
+}
+
+/* ---------------- 시험 생성 ---------------- */
+const MARK = ["①","②","③","④"];
+const shuffle = a => { a = a.slice(); for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+const $ = id => document.getElementById(id);
+let exam = [], graded = false, t0 = Date.now(), timerId;
+
+function build(){
+  const mcq = shuffle(MCQ).map(q => {
+    const order = shuffle([0,1,2,3]);
+    return {...q, type:"mcq", order, correct: order.indexOf(q.ans), picked:null};
+  });
+  const sa = shuffle(makeShort($("optVar").checked)).map(q => ({...q, type:"sa", inputs:q.fields.map(()=> "")}));
+  exam = $("optMix").checked ? shuffle([...mcq, ...sa]) : [...mcq, ...sa];
+  graded = false;
+  $("result").classList.add("hidden");
+  $("wrongOnlyWrap").classList.add("hidden");
+  $("optWrongOnly").checked = false;
+  render();
+  t0 = Date.now(); clearInterval(timerId); timerId = setInterval(tick, 1000); tick();
+  window.scrollTo(0,0);
+}
+
+function esc(s){ return s.replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+function render(){
+  const quiz = $("quiz"); quiz.innerHTML = "";
+  exam.forEach((q, i) => {
+    const el = document.createElement("section");
+    el.className = "q"; el.id = "q"+i;
+    const tag = q.type==="mcq" ? '<span class="tag">객관식</span>' :
+      `<span class="tag">단답형</span>${q.varied ? '<span class="tag var">숫자 변형</span>' : ""}`;
+    let body = "";
+    if (q.type==="mcq"){
+      body = q.order.map((oi, k) => `<label class="choice" data-k="${k}"><input type="radio" name="r${i}" value="${k}"><span class="mk">${MARK[k]}</span><span>${esc(q.opts[oi])}</span></label>`).join("");
+    } else {
+      body = q.fields.map((f, k) => `<div class="field"><span>${f.label}:</span><input type="text" data-k="${k}" autocomplete="off">${f.unit?`<span>${f.unit}</span>`:""}</div>`).join("")
+        + `<div class="field"><button class="check">확인</button></div>`;
+    }
+    el.innerHTML = `<div class="qhead"><span class="num">${i+1}.</span>${tag}</div><p class="stem">${q.stem}</p><div class="body">${body}</div><div class="exp hidden"></div>`;
+    if (q.type==="mcq"){
+      el.querySelectorAll(".choice").forEach(c => c.addEventListener("click", e => {
+        e.preventDefault();
+        if (q.checked) return;
+        q.picked = +c.dataset.k;
+        checkQ(i);
+      }));
+    } else {
+      const tryCheck = () => { if (!q.checked && answered(q)) checkQ(i); };
+      el.querySelectorAll("input").forEach(inp => {
+        inp.addEventListener("input", () => { q.inputs[+inp.dataset.k] = inp.value; });
+        inp.addEventListener("keydown", e => { if (e.key==="Enter") tryCheck(); });
+      });
+      el.querySelector(".check").addEventListener("click", tryCheck);
+    }
+    quiz.appendChild(el);
+  });
+  updateProgress();
+}
+
+function answered(q){ return q.type==="mcq" ? q.picked!==null : q.inputs.some(v => v.trim()); }
+
+// 한 문항 채점 + 해설 표시 (클릭/확인 즉시, 또는 제출 시 미응답 문항)
+function checkQ(i){
+  const q = exam[i], el = $("q"+i);
+  if (q.checked) return;
+  q.checked = true;
+  el.classList.add("graded");
+  const exp = el.querySelector(".exp"); exp.classList.remove("hidden");
+  if (q.type==="mcq"){
+    q.got = q.picked===q.correct ? 1 : 0;
+    q.status = q.got ? "ok" : "bad";
+    el.querySelectorAll(".choice").forEach(c => {
+      const k = +c.dataset.k;
+      if (k===q.correct) c.classList.add("right");
+      else if (k===q.picked) c.classList.add("wrong");
+    });
+    exp.innerHTML = `<b>${q.picked===null ? "미응답" : q.got ? "정답!" : "오답"} · 정답 ${MARK[q.correct]}</b> — ${q.exp}<div class="src">출제 근거: ${q.src} · 원본 ${q.id}번</div>`;
+  } else {
+    const pts = q.grade(q.inputs); q.got = pts.reduce((a,b)=>a+b,0);
+    q.status = q.got===q.max ? "ok" : q.got>0 ? "part" : "bad";
+    if (q.id===28) el.querySelectorAll("input").forEach((inp,k) => inp.classList.add(pts[k]?"right":"wrong"));
+    else el.querySelectorAll("input").forEach(inp => inp.classList.add(q.got===q.max?"right":"wrong"));
+    el.querySelectorAll("input").forEach(inp => inp.readOnly = true);
+    el.querySelector(".check").remove();
+    exp.innerHTML = `<b>${answered(q) ? "" : "미응답 · "}모범답안: ${q.answer}</b> · 내 점수 ${q.got}/${q.max}점<br>${q.exp}<div class="src">출제 근거: ${q.src} · 원본 ${q.id}번${q.varied?" (숫자 변형)":""}</div>`;
+  }
+  el.classList.add(q.status);
+  updateProgress();
+}
+
+function updateProgress(){
+  const done = exam.filter(q => q.checked), ok = done.filter(q => q.status==="ok").length;
+  $("progress").textContent = `${done.length} / ${exam.length} · 정답 ${ok}`;
+  $("nav").innerHTML = exam.map((q,i) => `<a href="#q${i}" class="${q.status || ""}">${i+1}</a>`).join("");
+}
+
+function tick(){
+  if (graded) return;
+  const s = Math.floor((Date.now()-t0)/1000);
+  $("timer").textContent = `${String(Math.floor(s/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`;
+}
+
+function submit(){
+  if (graded) return;
+  const left = exam.filter(q => !q.checked).length;
+  if (left && !confirm(`아직 ${left}문항을 안 풀었어요. 그래도 제출할까요?`)) return;
+  // 단답형에 입력만 하고 확인 안 누른 것도 여기서 채점
+  exam.forEach((q, i) => checkQ(i));
+  graded = true; clearInterval(timerId);
+  const mc = exam.filter(q => q.type==="mcq"), sa = exam.filter(q => q.type==="sa");
+  const mcOk = mc.filter(q => q.got).length;
+  const saPts = sa.reduce((a,q)=>a+q.got,0), saMax = sa.reduce((a,q)=>a+q.max,0);
+  const unanswered = exam.filter(q => !answered(q)).length;
+  const wrongList = exam.map((q,i) => q.status!=="ok" ? `<a href="#q${i}">${i+1}번</a>` : "").filter(Boolean);
+  const time = $("timer").textContent;
+  const r = $("result");
+  r.innerHTML = `<div class="row">
+      <div><div class="stat">객관식</div><div class="big">${mcOk} / ${mc.length}</div></div>
+      <div><div class="stat">단답형</div><div class="big">${saPts} / ${saMax}점</div></div>
+      <div><div class="stat">전체 정답</div><div class="big">${exam.filter(q=>q.status==="ok").length} / ${exam.length}</div></div>
+      <div><div class="stat">소요 시간</div><div class="big">${time}</div></div>
+    </div>
+    <div style="margin-top:8px">${wrongList.length ? `틀린·부분점수 문항: ${wrongList.join(", ")}` : "전부 맞았어요! 🎉"}${unanswered ? ` <span class="stat">(미응답 ${unanswered}문항 포함)</span>` : ""}</div>
+    <div class="stat" style="margin-top:6px">단답형은 입력값 기준 자동 채점이에요. 표기가 달라 오답 처리됐으면 모범답안과 직접 비교해 보세요.</div>`;
+  r.classList.remove("hidden");
+  $("wrongOnlyWrap").classList.remove("hidden");
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+
+function newExam(){
+  if (!graded && exam.some(q => q.checked) && !confirm("지금 풀던 답이 사라져요. 새로 섞을까요?")) return;
+  build();
+}
+
+$("btnNew").onclick = $("btnNew2").onclick = newExam;
+$("btnSubmit").onclick = $("btnSubmit2").onclick = submit;
+$("optMix").onchange = $("optVar").onchange = e => {
+  if (!exam.some(q => q.checked) || graded || confirm("설정을 바꾸면 새 시험지로 바뀌어요. 계속할까요?")) build();
+  else e.target.checked = !e.target.checked;
+};
+$("optWrongOnly").onchange = e => exam.forEach((q,i) => $("q"+i).classList.toggle("hidden", e.target.checked && q.status==="ok"));
+build();
+</script>
+</body>
+</html>
